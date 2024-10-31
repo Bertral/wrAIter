@@ -65,6 +65,10 @@ class Generator:
         except KeyboardInterrupt as e:
             self.streamer.end()
             raise e
+        except RuntimeError as e:
+            self.streamer.end()
+            print(e)
+            return ''
         finally:
             print('\033[00m', end='')
 
