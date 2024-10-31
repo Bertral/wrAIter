@@ -5,6 +5,8 @@ from difflib import SequenceMatcher
 import hashlib
 from collections import Counter
 
+import math
+
 from settings import Settings
 
 from generator.generator import Generator
@@ -44,7 +46,7 @@ class Story:
             self.title = save_name
         file_name = str(save_name) + ".json"
         with open(os.path.join(self.save_path, file_name), "w") as fp:
-            json.dump(self.events, fp)
+            json.dump(self.events, fp, indent=4)
 
     def new(self, context: str = ''):
         self.title = ''
@@ -105,7 +107,7 @@ class Story:
 
         return result.rstrip('\n')
 
-    def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
+    def act(self, action: str = '', tries: int = 5, eos_tokens=[]):
         max_tries = tries
         input_str = self.clean_input(action)
         self.events.append(action)
@@ -168,13 +170,13 @@ class Story:
             reader = csv.DictReader(csvfile, delimiter=',')
             for row in reader:
                 if row['word'] in wordcloud:
-                    wordcloud[row['word']] /= int(row['count'])
+                    wordcloud[row['word']] = math.log(wordcloud[row['word']]/int(row['count']))
                     min_freq = min(int(row['count']), min_freq)
                     found_words.add(row['word'])
 
         # assume unknown words have low frequency, but still have a frequency
         for w in wordcloud.keys() - found_words:
-            wordcloud[w] /= min_freq
+            wordcloud[w] = math.log(wordcloud[w] / min_freq)
 
         wordcloud = sorted(wordcloud.items(), key=lambda x: x[1], reverse=True)[:top_n]
 

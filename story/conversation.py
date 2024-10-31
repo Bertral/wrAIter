@@ -31,7 +31,7 @@ class Conversation(Story):
             self.title = save_name
         file_name = str(save_name) + " (conversation).json"
         with open(os.path.join(self.save_path, file_name), "w") as fp:
-            json.dump({'type': 'conversation', 'player':self.player, 'bot': self.bot, 'events': self.events}, fp)
+            json.dump({'type': 'conversation', 'player':self.player, 'bot': self.bot, 'events': self.events}, fp, indent=4)
 
     def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         return super().act(action, tries, ['"', '?"', '!"', '."', '\n'] + eos_tokens)

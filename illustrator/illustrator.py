@@ -22,7 +22,7 @@ class Illustrator:
             self.pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
 
     def illustrate(self, story: Story):
-        input = story.wordcloud(top_n=15, history_lookback=200)
+        input = story.wordcloud(top_n=15, history_lookback=500)
         print('keywords:', input)
 
         self.pipe = self.pipe.to(self.device)
