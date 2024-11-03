@@ -2,10 +2,7 @@
 
 wrAIter is a voiced AI that writes stories while letting the user interact and add to the story.
 You can write a paragraph, let the AI write the next one, you add another, etc.
-Or you can enable "choice mode" and let the AI make suggestions you can pick
-from for each paragraph.
-
-It has an option for voice input through the microphone, as well as a conversation mode to chat like you would to a home assistant without touching your keyboard.
+It allows for three input modes: typing text, selecting one of 3 actions, microphone input.
 
 ![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/428f2821-b5a6-4c51-9791-0c1da2e9ab03)
 
@@ -13,11 +10,14 @@ The AI writer is powered by any LLM that can be found on [Hugging Face](https://
 The default model has 2.7 billion parameters
 and was fine-tuned to write fictional stories.
 
-![image](https://github.com/FontaineRiant/wrAIter/assets/25899941/44173a2e-6cd4-4ec6-bf7a-f1028a23902c)
+wrAIter also displays illustrations for your story when you press `ctrl+o`. The default model Stable Diffusion 1.4 can be switched up in `settings.json`
+
+![Screenshot_20241010_091804](https://github.com/user-attachments/assets/f7b8da39-4783-4d27-a6fc-a4295502be55)
 
 ## Features
 * Compatible with LLMs from huggingface, fine-tuned for the specific purpose of writing stories,
 * A high quality narrator AI that reads the story out loud (TTS),
+* A stable diffusion illustrator model that shows a picture related to the story by pressing `ctrl+o`
 * Customizable voice: the narrator will sound like any voice sample of your choice,
 * Multiple speakers: the voice will change between the narrator and different characters,
 * Three modes to build a story: alternating AI-human writing, choosing from AI generated options or **microphone input**,
@@ -90,3 +90,4 @@ No. First, wrAIter doesn't adjust based on your or other players' inputs. The mo
 * [coqui-ai](https://github.com/coqui-ai/TTS) for the TTS models,
 * [mallorbc](https://github.com/mallorbc/whisper_mic) for the mic input lib,
 * [openai](https://github.com/openai/whisper) for the STT model.
+* [Stability-AI](https://github.com/Stability-AI) for the illustrator model.
