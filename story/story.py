@@ -48,13 +48,17 @@ class Story:
         with open(os.path.join(self.save_path, file_name), "w") as fp:
             json.dump(self.events, fp, indent=4)
 
+
     def new(self, context: str = ''):
         self.title = ''
         self.events = [context + '\n']
         return str(self)
 
     def get_max_history(self):
-        return min(self.gen.model.config.max_position_embeddings - self.gen_length, 6000)
+        max_tokens = self.gen.model.config.max_position_embeddings
+        if hasattr(self.gen.model.config, 'sliding_window'):
+            max_tokens = min(self.gen.model.config.sliding_window * 2, max_tokens)
+        return max_tokens - self.gen_length
 
     def clean_input(self, action=''):
         # find the biggest memory that fits max_tokens
@@ -107,7 +111,7 @@ class Story:
 
         return result.rstrip('\n')
 
-    def act(self, action: str = '', tries: int = 5, eos_tokens=[]):
+    def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         max_tries = tries
         input_str = self.clean_input(action)
         self.events.append(action)
