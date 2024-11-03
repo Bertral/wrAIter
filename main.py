@@ -26,8 +26,10 @@ class Game:
     def __init__(self):
         self.settings = settings.Settings()
         self.status_text = 'Press Enter twice to send, Ctrl-L for a list of commands'
-        self.gen = Generator(model_name=self.settings.get('model'), gpu=not self.settings.get('cputext'), precision=self.settings.get('precision'))
-        self.tts = None if self.settings.get('silent') else Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'))
+        self.gen = Generator(model_name=self.settings.get('model'), gpu=not self.settings.get('cputext'),
+                             gpu_memory=self.settings.get('gpu_memory'))
+        self.tts = None if self.settings.get('silent') else Dub(gpu=not self.settings.get('cputts'),
+                                                                lang=self.settings.get('language'))
         self.stt = None
         self.illustrator = None
         self.story = Story(self.gen, censor=self.settings.get('censor'))
@@ -83,7 +85,6 @@ class Game:
                 choices += ['switch to choice input']
             if self.loop != self.loop_voice:
                 choices += ['switch to voice input']
-
 
             if len(self.story.events) > 1:
                 choices.insert(1, 'save')
@@ -321,7 +322,7 @@ class Game:
                                                 mandatory=False, multiline=True, instruction=' ',
                                                 long_instruction='Press Enter twice to send, Ctrl-C to cancel',
                                                 keybindings={'answer': [{'key': ['enter', 'enter']}]}).execute()
-                    if new_context is not None:
+                    if new_context is not None and new_context != self.story.events[0]:
                         self.story.events[0] = new_context
 
                 elif self.keybind_pressed == save:

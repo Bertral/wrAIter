@@ -14,10 +14,10 @@ class Settings:
             'cputts': True,  # force TTS to run on CPU
             'cputext': True,  # force text generation to run on CPU
             'cpuillustrate': True,  # force image generation to run on CPU
-            'precision': 16,  # float precision, only available with GPU enabled for text generation,
             # possible values are 4, 8, 16 (default 16), lower values reduce VRAM usage
             'language': 'en',
-            'save_directory': 'saved_stories'
+            'save_directory': 'saved_stories',
+            'gpu_memory': 1000
         }
 
     def get(self, key):
