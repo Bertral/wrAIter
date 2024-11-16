@@ -27,7 +27,9 @@ class Game:
         self.settings = settings.Settings()
         self.status_text = 'Press Enter twice to send, Ctrl-L for a list of commands'
         self.gen = Generator(model_name=self.settings.get('model'), gpu=not self.settings.get('cputext'),
-                             gpu_memory=self.settings.get('gpu_memory'))
+                             gpu_memory=self.settings.get('gpu_memory'),
+                             model_gguf_file=self.settings.get('model_gguf_file'),
+                             model_gguf_type=self.settings.get('model_gguf_type'))
         self.tts = None if self.settings.get('silent') else Dub(gpu=not self.settings.get('cputts'),
                                                                 lang=self.settings.get('language'))
         self.stt = None

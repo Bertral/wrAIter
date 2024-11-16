@@ -9,6 +9,8 @@ class Settings:
             'silent': False,  # mute audio output
             'censor': True,  # censor bad words (slurs/nsfw)
             'model': 'KoboldAI/OPT-2.7B-Nerys-v2',  # model name on huggingface
+            "model_gguf_file": "",
+            "model_gguf_type": "",
             "model_illustrator": "CompVis/stable-diffusion-v1-4",  # image model name on huggingface
             'illustrator_negative_prompt' : 'poor quality, bad anatomy, empty eyes, ugly, blurry, worst quality, missing limbs, deformed, error, jpeg, text, low res',
             'cputts': True,  # force TTS to run on CPU

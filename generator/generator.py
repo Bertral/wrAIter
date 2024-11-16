@@ -7,6 +7,8 @@ from accelerate import cpu_offload
 class Generator:
     def __init__(self,
                  model_name='KoboldAI/OPT-2.7B-Nerys-v2',
+                 model_gguf_file=None,
+                 model_gguf_type=None,
                  gpu=True,
                  gpu_memory=1000):
         """
@@ -23,9 +25,13 @@ class Generator:
         else:
             self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, device_map='auto',
                                                               max_memory={0: f'{gpu_memory}GiB', 'cpu': '1000GiB'},
-                                                              attn_implementation='eager')
+                                                              attn_implementation='eager',
+                                                              gguf_file=model_gguf_file if model_gguf_file else None,
+                                                              model_type=model_gguf_type if model_gguf_type else None)
 
-        self.enc = AutoTokenizer.from_pretrained(model_name, add_prefix_space=False)
+        self.enc = AutoTokenizer.from_pretrained(model_name, add_prefix_space=False,
+                                                 gguf_file=model_gguf_file if model_gguf_file else None,
+                                                 model_type=model_gguf_type if model_gguf_type else None)
         self.streamer = TextStreamer(self.enc, skip_prompt=True)
 
     def generate(self, prompt: str, length, stream=True, eos_tokens=[]):
