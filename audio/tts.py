@@ -1,15 +1,18 @@
 import io
-import os, sys, datetime, argparse, time
-from pathlib import Path
-from contextlib import contextmanager
-import random
+import os
 import re
+import sys
 import wave
+from contextlib import contextmanager
+from pathlib import Path
+
 import TTS
-from TTS.utils.synthesizer import Synthesizer
 from TTS.utils.manage import ModelManager
+from TTS.utils.synthesizer import Synthesizer
 from pygame import mixer
 from pysbd import Segmenter
+
+from story.story import Story
 
 
 class Dub:
@@ -20,16 +23,16 @@ class Dub:
         self.device = 'cuda' if gpu else 'cpu'
         self.lang = lang
 
-        self.model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
+        self.model_name = 'tts_models/multilingual/multi-dataset/xtts_v2'
 
-        self.path = Path(TTS.__file__).parent / "./.models.json"
+        self.path = Path(TTS.__file__).parent / './.models.json'
         self.manager = ModelManager(self.path)
         # print(self.manager.list_models())
         # quit()
         self.model_path, self.config_path, _ = self.manager.download_model(self.model_name)
 
         if self.config_path is None:
-            self.config_path = self.model_path + "/config.json"
+            self.config_path = self.model_path + '/config.json'
 
         self.vocoder_path, self.vocoder_config_path, _ = None, None, None
 
@@ -38,10 +41,9 @@ class Dub:
                                        use_cuda=gpu)
         self.synthesizer.tts_model.to('cpu')
 
-
     @contextmanager
     def suppress_stdout(self):
-        with open(os.devnull, "w") as devnull:
+        with open(os.devnull, 'w') as devnull:
             old_stdout = sys.stdout
             sys.stdout = devnull
             try:
@@ -77,37 +79,55 @@ class Dub:
         mixer.music.stop()
         mixer.music.unload()
 
-
     def playsound(self, file):
         self.stop()
         file.seek(0)
         mixer.music.load(file)
         mixer.music.play()
 
-
-    def deep_play(self, text):
+    def deep_play(self, text, story: Story=None):
         try:
+            line_speakers = []
+            if story:
+                # get full context, but only split on newlines that are contained in text
+                lines = str(story).rsplit('\n', maxsplit=text.count('\n'))
+                for i in range(len(lines)):
+                    if '"' in lines[i]:
+                        line_with_context = '\n'.join(lines[:i + 1])
+                        last_quotation_index = line_with_context.rfind('"')
+                        line_with_context = line_with_context[:last_quotation_index + 1]
+                        line_speakers.append(story.gen.extract_gender(line_with_context))
+                    else:
+                        line_speakers.append('nb')
+
             narrator = ['./audio/voices/narrator/' + f for f in os.listdir('./audio/voices/narrator')]
-            char1 = ['./audio/voices/character1/' + f for f in os.listdir('./audio/voices/character1')]
-            char2 = ['./audio/voices/character2/' + f for f in os.listdir('./audio/voices/character2')]
+            speakers = {
+                'm': ['./audio/voices/speaker_m/' + f for f in os.listdir('./audio/voices/speaker_m')],
+                'f': ['./audio/voices/speaker_f/' + f for f in os.listdir('./audio/voices/speaker_f')],
+                'nb': ['./audio/voices/speaker_nb/' + f for f in os.listdir('./audio/voices/speaker_nb')]
+            }
 
             files = []
 
+            current_speaker_index = 0
+
             for t in text.split('\n'):
-                cnt = 0
+                dialogue_speaker = speakers[line_speakers[current_speaker_index]] if line_speakers else speakers['nb']
+                current_speaker_index  += 1
+                in_quotes = False
 
                 self.lines_spoken += 1
 
                 lines = t.split('"')
                 for line in lines:
-                    if cnt % 2:
+                    if in_quotes:
                         # within quotes
-                        speaker = char1 if self.lines_spoken % 2 else char2
+                        speaker = dialogue_speaker
                     else:
                         # out of quotes -> narrator
                         speaker = narrator
 
-                    cnt += 1
+                    in_quotes = not in_quotes
 
                     line = self.clean_input(line)
 
@@ -115,7 +135,7 @@ class Dub:
                         continue
 
                     if len(line) > 1 and line[-1] == '.':
-                        line = line[:-1]  # remove trailing dots, they're often pronounced "dot"
+                        line = line[:-1]  # remove trailing dots, they're often pronounced 'dot'
 
                     # split sentences manually to then regroup tiny sentences together (one-word inputs sound ugly)
                     sentences = Segmenter(language='en', clean=True).segment(line)
@@ -145,7 +165,7 @@ class Dub:
                                                                language_name=self.lang,
                                                                speaker_name=None, split_sentences=True)
 
-                        in_memory_wav=io.BytesIO()
+                        in_memory_wav = io.BytesIO()
                         self.synthesizer.save_wav(wav, in_memory_wav)
                         files.append(in_memory_wav)
 

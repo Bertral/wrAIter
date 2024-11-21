@@ -1,7 +1,7 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
-from transformers.cache_utils import DynamicCache
 import torch
 from accelerate import cpu_offload
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
+from transformers.cache_utils import DynamicCache
 
 
 class Generator:
@@ -81,6 +81,37 @@ class Generator:
             return ''
         finally:
             print('\033[00m', end='')
-
         return self.enc.batch_decode(generated_ids[:, model_inputs['input_ids'].shape[1]:],
                                      clean_up_tokenization_spaces=False)[0]
+
+    def extract_gender(self, prompt):
+        """
+        Returns whether "he", "she" or "I/you/they" is the most likely token that follows the prompt.
+        :param prompt:
+        :return: str, one of ('m', 'f', 'nb')
+        """
+
+        model_inputs = self.enc([prompt], return_tensors='pt').to(self.device)
+
+        # we assume that space+pronoun is encoded into a single token
+        tokens = {
+            self.enc.encode(' He')[-1]: 'm', self.enc.encode(' he')[-1]: 'm',
+            self.enc.encode(' She')[-1]: 'f', self.enc.encode(' she')[-1]: 'f',
+            self.enc.encode(' They')[-1]: 'nb', self.enc.encode(' they')[-1]: 'nb',
+            self.enc.encode(' You')[-1]: 'nb', self.enc.encode(' you')[-1]: 'nb',
+            self.enc.encode(' I')[-1]: 'nb'
+        }
+
+        # cap input at 512 tokens, the full history would be overkill
+        scores = self.model.generate(
+            input_ids=model_inputs['input_ids'][:, -512:],
+            attention_mask=model_inputs['attention_mask'][:, -512:],
+            max_new_tokens=1,
+            pad_token_id=self.enc.eos_token_id,
+            eos_token_id=[self.enc.eos_token_id],
+            output_scores=True, return_dict_in_generate=True
+        ).scores[-1]
+        output_probs = scores.softmax(1).mean(axis=0).flatten().cpu().detach().numpy()
+        token_prob = {k : output_probs[k] for k in tokens.keys()}
+        return tokens[max(token_prob, key=token_prob.get)]
+

@@ -30,11 +30,11 @@ class Game:
                              gpu_memory=self.settings.get('gpu_memory'),
                              model_gguf_file=self.settings.get('model_gguf_file'),
                              model_gguf_type=self.settings.get('model_gguf_type'))
+        self.story = Story(self.gen, censor=self.settings.get('censor'))
         self.tts = None if self.settings.get('silent') else Dub(gpu=not self.settings.get('cputts'),
                                                                 lang=self.settings.get('language'))
         self.stt = None
         self.illustrator = None
-        self.story = Story(self.gen, censor=self.settings.get('censor'))
         self.loop = self.loop_text
         self.sample_hashes = []
         self.keybind_pressed = None
@@ -122,7 +122,8 @@ class Game:
                 self.loop = self.loop_voice
             elif action in ('mute audio', 'unmute audio'):
                 if self.tts is None:
-                    self.tts = Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'))
+                    self.tts = Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'),
+                                                                game=self)
                     self.settings.set('silent', False)
                 else:
                     self.tts.stop()
@@ -380,9 +381,9 @@ class Game:
                     else:
                         if self.tts is not None:
                             if isinstance(self.story, Conversation):
-                                self.tts.deep_play(result)
+                                self.tts.deep_play(result, story=self.story)
                             else:
-                                self.tts.deep_play(action + result)
+                                self.tts.deep_play(action + result, story=self.story)
 
                         postprocess.post_tts(self.story)
             except KeyboardInterrupt:
@@ -423,7 +424,7 @@ class Game:
                 if result is None:
                     print("--- The model failed to produce an decent output after multiple tries. Try something else.")
                 else:
-                    self.tts.deep_play(result)
+                    self.tts.deep_play(result, story=self.story)
             except KeyboardInterrupt as e:
                 if self.tts is not None:
                     self.tts.stop()
@@ -458,7 +459,7 @@ class Game:
                         self.story.new(self.story.events[0])
                         self.pprint()
                         if self.tts is not None:
-                            self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])))
+                            self.tts.deep_play('\n'.join(filter(None, self.story.events[2:])), story=self.story)
                     else:
                         self.story.events = self.story.events[:-1]
                         self.pprint()
@@ -467,7 +468,7 @@ class Game:
                     self.story.events.append(user_input)
                     self.pprint()
                     if self.tts is not None:
-                        self.tts.deep_play(user_input)
+                        self.tts.deep_play(user_input, story=self.story)
             except KeyboardInterrupt:
                 if self.tts is not None:
                     self.tts.stop()

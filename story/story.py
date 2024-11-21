@@ -109,7 +109,13 @@ class Story:
             result = re.sub(r'|'.join(rf'(\b{re.escape(s)}\b)' for s in self.censored_words), '[CENSORED]', result,
                             flags=re.IGNORECASE)
 
-        return result.rstrip('\n')
+        result = result.rstrip('\n')
+
+        if (str(self) + result).rsplit('\n', maxsplit=1)[-1].count('"') % 2:
+            # close quotation marks
+            result += '"'
+
+        return result
 
     def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         max_tries = tries
