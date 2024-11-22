@@ -96,15 +96,26 @@ class Dub:
                         line_with_context = '\n'.join(lines[:i + 1])
                         last_quotation_index = line_with_context.rfind('"')
                         line_with_context = line_with_context[:last_quotation_index + 1]
-                        line_speakers.append(story.gen.extract_gender(line_with_context))
+                        gender = story.gen.extract_gender(line_with_context)
+
+                        # alternate voice for alternate characters
+                        last_gender = [g for g in line_speakers if g]
+                        last_gender = last_gender[-1] if last_gender else None
+                        if last_gender == gender and gender in ('f', 'm'):
+                            gender += '_alt'
+
+                        line_speakers.append(gender)
                     else:
-                        line_speakers.append('nb')
+                        line_speakers.append(None)
 
             narrator = ['./audio/voices/narrator/' + f for f in os.listdir('./audio/voices/narrator')]
             speakers = {
                 'm': ['./audio/voices/speaker_m/' + f for f in os.listdir('./audio/voices/speaker_m')],
                 'f': ['./audio/voices/speaker_f/' + f for f in os.listdir('./audio/voices/speaker_f')],
-                'nb': ['./audio/voices/speaker_nb/' + f for f in os.listdir('./audio/voices/speaker_nb')]
+                'm_alt': ['./audio/voices/speaker_m_alt/' + f for f in os.listdir('./audio/voices/speaker_m_alt')],
+                'f_alt': ['./audio/voices/speaker_f_alt/' + f for f in os.listdir('./audio/voices/speaker_f_alt')],
+                'nb': ['./audio/voices/speaker_nb/' + f for f in os.listdir('./audio/voices/speaker_nb')],
+                None: ['./audio/voices/speaker_nb/' + f for f in os.listdir('./audio/voices/speaker_nb')]
             }
 
             files = []
