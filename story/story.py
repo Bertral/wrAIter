@@ -57,7 +57,7 @@ class Story:
     def get_max_history(self):
         max_tokens = self.gen.model.config.max_position_embeddings
         if hasattr(self.gen.model.config, 'sliding_window'):
-            max_tokens = min(self.gen.model.config.sliding_window * 2, max_tokens)
+            max_tokens = min(self.gen.model.config.sliding_window * 1.5, max_tokens)
         return max_tokens - self.gen_length
 
     def clean_input(self, action=''):
