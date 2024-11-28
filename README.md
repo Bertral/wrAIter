@@ -19,7 +19,7 @@ wrAIter also displays illustrations for your story when you press `ctrl+o`. The 
 * A high quality narrator AI that reads the story out loud (TTS),
 * A stable diffusion illustrator model that shows a picture related to the story by pressing `ctrl+o`
 * Customizable voice: the narrator will sound like any voice sample of your choice,
-* Multiple speakers: the voice will change between the narrator and different characters,
+* Multiple speakers: the voice will change between the narrator and different characters, detecting their most likely gender to assign voices,
 * Three modes to build a story: alternating AI-human writing, choosing from AI generated options or **microphone input**,
 * A conversation mode to chat directly with a fictional character,
 * Save, load, continue and revert functions.
