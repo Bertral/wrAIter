@@ -486,6 +486,8 @@ class Game:
         else:
             body = str(self.story)
 
+        body = re.sub(r'"(.*?)"', r'\033[93m"\1"\033[00m', body)
+
         body = f'{body}\033[96m{highlighted}\033[00m'
 
         print('\n'.join(['\n'.join(wrapper.wrap(line)) for line in body.splitlines()]),
