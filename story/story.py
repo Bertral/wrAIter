@@ -7,6 +7,7 @@ from collections import Counter
 
 import math
 
+import settings
 from settings import Settings
 
 from generator.generator import Generator
@@ -119,6 +120,8 @@ class Story:
 
     def act(self, action: str = '', tries: int = 10, eos_tokens=[]):
         max_tries = tries
+        if Settings().get('mode_rpg'):
+            action = self.first_to_second_person(action)
         input_str = self.clean_input(action)
         self.events.append(action)
         try:
@@ -198,3 +201,60 @@ class Story:
     def __str__(self):
         text = ''.join(filter(None, self.events)).lstrip()
         return text
+
+    def first_to_second_person(self, action):
+        first_to_second_mappings = [
+            ("I'm", "you're"),
+            ("Im", "you're"),
+            ("Ive", "you've"),
+            ("I am", "you are"),
+            ("was I", "were you"),
+            ("am I", "are you"),
+            ("wasn't I", "weren't you"),
+            ("I", "you"),
+            ("I'd", "you'd"),
+            ("i", "you"),
+            ("I've", "you've"),
+            ("was I", "were you"),
+            ("am I", "are you"),
+            ("wasn't I", "weren't you"),
+            ("I", "you"),
+            ("I'd", "you'd"),
+            ("i", "you"),
+            ("I've", "you've"),
+            ("I was", "you were"),
+            ("my", "your"),
+            ("we", "you"),
+            ("we're", "you're"),
+            ("mine", "yours"),
+            ("me", "you"),
+            ("us", "you"),
+            ("our", "your"),
+            ("I'll", "you'll"),
+            ("myself", "yourself"),
+        ]
+        action = " " + action
+        for pair in first_to_second_mappings:
+            variations = [(" " + pair[0] + " ", " " + pair[1] + " "),
+                            (" " + pair[0][0].upper() + pair[0][1:] + " ", " " + pair[1][0].upper() + pair[1][1:] + " ")]
+            # Change you if it's before a punctuation
+            if pair[0] == "you":
+                pair = ("you", "me")
+            variations.append((" " + pair[0] + ",", " " + pair[1] + ","))
+            variations.append((" " + pair[0] + r"\?", " " + pair[1] + r"\?"))
+            variations.append((" " + pair[0] + r"\!", " " + pair[1] + r"\!"))
+            variations.append((" " + pair[0] + r"\.", " " + pair[1] + "."))
+
+            for variation in variations:
+                reg_expr = re.compile(variation[0] + '(?=([^"]*"[^"]*")*[^"]*$)')
+                action = reg_expr.sub(variation[1], action)
+
+        first_letters_regex = re.compile(r"((?<=[.?!]\s)(\w+)|(^\w+))")
+        def cap(match):
+            string_list = list(match.group())
+            string_list[0] = string_list[0].upper()
+            return "".join(string_list)
+
+        action = first_letters_regex.sub(cap, action)
+
+        return action[1:]

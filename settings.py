@@ -19,7 +19,8 @@ class Settings:
             # possible values are 4, 8, 16 (default 16), lower values reduce VRAM usage
             'language': 'en',
             'save_directory': 'saved_stories',
-            'gpu_memory': 1000
+            'gpu_memory': 1000,
+            'mode_rpg': False
         }
 
     def get(self, key):

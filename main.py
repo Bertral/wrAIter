@@ -81,6 +81,8 @@ class Game:
 
             choices.append('allow profanity' if self.settings.get('censor') else 'censor profanity')
 
+            choices.append('disable RPG mode' if self.settings.get('mode_rpg') else 'enable RPG mode')
+
             if self.loop != self.loop_text:
                 choices += ['switch to text input']
             if self.loop != self.loop_choice and not isinstance(self.story, Conversation):
@@ -135,6 +137,10 @@ class Game:
             elif action == 'allow profanity':
                 self.story.censor = False
                 self.settings.set('censor', False)
+            elif action == 'disable RPG mode':
+                self.settings.set('mode_rpg', False)
+            elif action == 'enable RPG mode':
+                self.settings.set('mode_rpg', True)
             else:
                 print('invalid input')
 
