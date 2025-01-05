@@ -124,8 +124,7 @@ class Game:
                 self.loop = self.loop_voice
             elif action in ('mute audio', 'unmute audio'):
                 if self.tts is None:
-                    self.tts = Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'),
-                                                                game=self)
+                    self.tts = Dub(gpu=not self.settings.get('cputts'), lang=self.settings.get('language'))
                     self.settings.set('silent', False)
                 else:
                     self.tts.stop()
